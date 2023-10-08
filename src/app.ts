@@ -1,10 +1,30 @@
 import express from 'express';
 import { Server } from 'socket.io';
-import { createServer } from 'http';
+import { faker } from '@faker-js/faker';
+import cors from 'cors';
 
 const app = express();
-const httpServer = createServer(app);
-const io = new Server(httpServer);
+const port = 3000;
+const socketPort = 3001;
+
+const io = new Server(socketPort, {
+  cors: {
+    origin: '*',
+    methods: 'GET, HEAD, PUT, PATCH, POST, DELETE',
+    allowedHeaders: 'Content-Type, Authorization',
+    credentials: true,
+    maxAge: 3600,
+  }
+})
+
+var corsOptions = {
+  origin: `http://localhost:${port}`,
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
+app.use(cors(corsOptions));
+app.use(express.json());
 
 io.on('connection', (socket) => {
   console.log('a user connected');
@@ -16,6 +36,6 @@ app.get('/', (req, res) => {
   res.send(resp);
 });
 
-httpServer.listen(3000, () => {
-  console.log('listening on *:3000');
+app.listen(port, () => {
+  console.log(`listening on *:${port}`);
 });
